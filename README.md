@@ -40,5 +40,7 @@ docker-compose up -d --build
 
 ## 📖 Documentation Détaillée
 *   [Architecture & Design](./docs/ARCHITECTURE.md)
-*   [Guide de Déploiement](./docs/DEPLOYMENT_GUIDE.md)
+*   [Guide de Déploiement & DevOps](./docs/DEPLOYMENT_GUIDE.md)
 *   [API & Endpoints](./docs/API_GUIDE.md)
+*   [Guide de Test sous Docker](./docs/DOCKER_TESTING_GUIDE.md)
+*   [Guide Technique Détaillé](./docs/guide.md)
