@@ -1,0 +1,70 @@
+# ─────────────────────────────────────
+# Secrets & credentials
+# ─────────────────────────────────────
+*.pem
+*.key
+*.p12
+*.pfx
+.env
+.env.*
+credentials
+aws_credentials
+
+# ─────────────────────────────────────
+# Terraform
+# ─────────────────────────────────────
+.terraform/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+*.tfstate.backup
+terraform.tfvars
+!terraform/terraform.tfvars.example
+
+# ─────────────────────────────────────
+# Logs
+# ─────────────────────────────────────
+logs/
+*.log
+
+# ─────────────────────────────────────
+# macOS
+# ─────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V8
+.Trashes
+
+# ─────────────────────────────────────
+# IDE
+# ─────────────────────────────────────
+.idea/
+.vscode/
+*.iml
+
+
+# ─────────────────────────────────────
+# Fichiers temporaires
+# ─────────────────────────────────────
+*.tmp
+*.bak
+*.swp
+*~
+
+# ─────────────────────────────────────
+# Java / Maven
+# ─────────────────────────────────────
+target/
+**/target/
+*.class
+!.mvn/wrapper/maven-wrapper.jar
+
+# ─────────────────────────────────────
+# Node / Angular
+# ─────────────────────────────────────
+node_modules/
+**/node_modules/
+/angular-front-end/dist/
+/angular-front-end/.angular/
+.npm/
