@@ -1,0 +1,59 @@
+# alert_rules.yml — Règles d'alerte Prometheus
+# À placer à la racine du projet
+
+groups:
+  - name: services.rules
+    rules:
+
+      # ── Alerte 1 : Taux d'erreur élevé ─────────────────────
+      - alert: HighErrorRate
+        expr: |
+          (
+            sum(rate(http_server_requests_seconds_count{status=~"5.."}[5m])) by (job)
+            /
+            sum(rate(http_server_requests_seconds_count[5m])) by (job)
+          ) > 0.05
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Taux d'erreur > 5% sur {{ $labels.job }}"
+          description: >
+            Le service {{ $labels.job }} a un taux d'erreur de {{ $value | humanizePercentage }}.
+
+      # ── Alerte 2 : Latence p99 élevée ──────────────────────
+      - alert: HighLatencyP99
+        expr: |
+          histogram_quantile(
+            0.99,
+            sum(rate(http_server_requests_seconds_bucket[5m])) by (le, job)
+          ) > 0.5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Latence p99 > 500ms sur {{ $labels.job }}"
+          description: >
+            Le service {{ $labels.job }} répond en {{ $value | humanizeDuration }} au p99.
+
+      # ── Alerte 3 : Service down ─────────────────────────────
+      # Se déclenche si Prometheus ne peut pas scraper un service
+      - alert: ServiceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Service {{ $labels.job }} injoignable"
+          description: "Prometheus ne peut pas collecter les métriques de {{ $labels.job }} depuis 1 minute."
+
+      # ── Alerte 4 : Mémoire élevée ───────────────────────────
+      - alert: HighMemoryUsage
+        expr: |
+          jvm_memory_used_bytes > 500 * 1024 * 1024
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Utilisation mémoire élevée sur {{ $labels.job }}"
+          description: "{{ $labels.job }} utilise {{ $value | humanize }} de RAM."

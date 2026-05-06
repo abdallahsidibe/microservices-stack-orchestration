@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rapport SLO </title>
+    <!-- GitHub Markdown CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.2.0/github-markdown.min.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #0366d6;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --danger-color: #d73a49;
+            --bg-color: #f6f8fa;
+        }
+        body {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+        }
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            background: #fff;
+            box-shadow: 0 8px 24px rgba(149,157,165,0.2);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #24292e 0%, #444d56 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 2.2em;
+            font-weight: 800;
+        }
+        .header p {
+            opacity: 0.8;
+            margin-top: 10px;
+            font-size: 1.1em;
+        }
+        .markdown-body {
+            padding: 40px 50px;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9em;
+            color: white;
+            background: var(--success-color);
+        }
+        .section-card {
+            border: 1px solid #e1e4e8;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            background: #fafbfc;
+        }
+        img {
+            max-width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin: 15px 0;
+        }
+        blockquote {
+            border-left: 4px solid var(--primary-color);
+            background: #f1f8ff;
+            padding: 15px;
+            color: #0366d6;
+            margin: 20px 0;
+        }
+        pre {
+            background-color: #f6f8fa;
+            padding: 16px;
+            border-radius: 6px;
+        }
+        .page-break {
+            page-break-after: always;
+        }
+        @media print {
+            .container { box-shadow: none; margin: 0; width: 100%; }
+            body { background: white; }
+            .header { background: #24292e !important; color: white !important; -webkit-print-color-adjust: exact; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1> Service Level Objectives (SLO)</h1>
+        <p>Rapport de Fiabilité & Performance </p>
+    </div>
+
+    <article class="markdown-body">
+        
+        <section>
+            <h2> 1. Introduction & Méthodologie</h2>
+            <p>Ce document définit les objectifs de niveau de service (SLO) pour la stack microservices. Nous utilisons la <strong>méthode RED</strong> (Rate, Errors, Duration) pour mesurer la performance et la fiabilité.</p>
+            <blockquote>
+                <strong>Objectif principal :</strong> Garantir une expérience utilisateur optimale sur le front-end Angular tout en maintenant la stabilité du backend Spring Boot.
+            </blockquote>
+        </section>
+
+        <section>
+            <h2> 2. SLI définis (Service Level Indicators)</h2>
+            
+            <h3>A. Disponibilité (Success Rate)</h3>
+            <p>Proportion de requêtes HTTP réussies (codes 2xx, 3xx, 4xx) par rapport au total, excluant les erreurs serveur (5xx).</p>
+            <pre><code>1 - (sum(rate(http_server_requests_seconds_count{status=~"5.."}[5m])) / sum(rate(http_server_requests_seconds_count[5m])))</code></pre>
+            <img src="../docs/images/les404dansPrometheussumratehttp_server_requests_seconds_count.png" alt="SLI Availability">
+
+            <div class="page-break"></div>
+
+            <h3>B. Latence (p99 Duration)</h3>
+            <p>Temps de réponse en millisecondes sous lequel 99% des requêtes sont traitées.</p>
+            <pre><code>histogram_quantile(0.99, sum(rate(http_server_requests_seconds_bucket[5m])) by (le, job)) * 1000</code></pre>
+            <img src="../docs/images/requetepourhistogram_quantile.png" alt="SLI Latency">
+        </section>
+
+        <section>
+            <h2> 3. SLO (Service Level Objectives)</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Indicateur</th>
+                        <th>Cible (30j)</th>
+                        <th>Tolérance d'erreur</th>
+                        <th>Justification Métier</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Disponibilité</strong></td>
+                        <td><strong>≥ 99,5%</strong></td>
+                        <td>0,5% (216 min/mois)</td>
+                        <td>Critique pour les transactions bancaires.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Latence p99</strong></td>
+                        <td><strong>≤ 500ms</strong></td>
+                        <td>0,5% de requêtes lentes</td>
+                        <td>Éviter les timeouts sur Angular.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <div class="page-break"></div>
+
+        <section>
+            <h2> 4. Calcul de l'Error Budget</h2>
+            <p>Le budget d'erreur est la quantité d'indisponibilité que nous acceptons de tolérer avant de stopper les nouveaux déploiements.</p>
+            
+            <div class="section-card">
+                <h4>Fenêtre glissante de 30 jours :</h4>
+                <ul>
+                    <li>Total minutes : 43 200 min</li>
+                    <li>Indisponibilité tolérée (0,5%) : <strong>3 heures 36 minutes</strong></li>
+                </ul>
+            </div>
+
+            <p><strong>Distribution de la latence (Buckets) :</strong></p>
+            <img src="../docs/images/http_server_requests_seconds_bucketgraph.png" alt="Latency Buckets">
+        </section>
+
+        <section>
+            <h2>5. État actuel & Consommation</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Métrique</th>
+                        <th>Valeur Actuelle</th>
+                        <th>Budget Restant</th>
+                        <th>Statut</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Disponibilité</td>
+                        <td>100%</td>
+                        <td>100%</td>
+                        <td><span class="status-badge">✅ OK</span></td>
+                    </tr>
+                    <tr>
+                        <td>Latence p99</td>
+                        <td>~45ms</td>
+                        <td>100%</td>
+                        <td><span class="status-badge">✅ OK</span></td>
+                    </tr>
+                </tbody>
+            </table>
+            <p><strong>Preuve de performance (Histogramme) :</strong></p>
+            <img src="../docs/images/requetepourhistogram_quantilegraph.png" alt="Histogram Graph">
+        </section>
+
+        <div class="page-break"></div>
+
+        <section>
+            <h2> 6. Politique de Gel</h2>
+            <ol>
+                <li><strong>Budget < 20%</strong> : Alerte Orange. Analyse post-mortem obligatoire.</li>
+                <li><strong>Budget < 10%</strong> : Gel des déploiements de fonctionnalités.</li>
+                <li><strong>Budget = 0%</strong> : Priorité absolue à la fiabilité.</li>
+            </ol>
+        </section>
+
+        <section>
+            <h2> 7. Dashboard Global</h2>
+            <img src="../docs/images/grafana-explore-p99-latency.png" alt="Grafana Dashboard">
+        </section>
+
+        <section>
+            <h2>8. Alerting & Réactivité</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Alerte</th>
+                        <th>Sévérité</th>
+                        <th>Action attendue</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>ServiceDown</strong></td>
+                        <td>🔴 Critical</td>
+                        <td>Intervention On-call</td>
+                    </tr>
+                    <tr>
+                        <td><strong>HighErrorRate</strong></td>
+                        <td>🔴 Critical</td>
+                        <td>Rollback immédiat</td>
+                    </tr>
+                    <tr>
+                        <td><strong>HighLatency</strong></td>
+                        <td>🟡 Warning</td>
+                        <td>Analyse DB / Cache</td>
+                    </tr>
+                    <tr>
+                        <td><strong>JVM Memory</strong></td>
+                        <td>🟡 Warning</td>
+                        <td>Analyse Leak / Scaling</td>
+                    </tr>
+                </tbody>
+            </table>
+            <img src="../docs/images/%20httplocalhost8082actuatorprometheusgrepjvm_memory_used_bytes.png" alt="JVM Memory Metric">
+        </section>
+
+    </article>
+
+    <footer style="text-align: center; padding: 30px; color: #586069; border-top: 1px solid #e1e4e8;">
+        <p>Rapport SLO</p>
+    </footer>
+</div>
+
+</body>
+</html>

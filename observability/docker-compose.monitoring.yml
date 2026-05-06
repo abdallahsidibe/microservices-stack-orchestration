@@ -1,0 +1,66 @@
+# docker-compose.monitoring.yml
+# 
+# Ce fichier ÉTEND votre docker-compose.yml du TP Jour 1.
+# Lancez avec :
+#   docker-compose -f docker-compose.yml -f docker-compose.monitoring.yml up --build
+#
+# Ou fusionnez ce contenu dans votre docker-compose.yml existant.
+
+version: '3.8'
+
+services:
+
+  # ── Prometheus — Collecte des métriques ──────────────────────
+  prometheus:
+    image: prom/prometheus:v2.47.0
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./alert_rules.yml:/etc/prometheus/alert_rules.yml:ro
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=15d'
+      - '--web.enable-lifecycle'    # Permet le rechargement à chaud via API
+    networks:
+      - microservices
+    restart: unless-stopped
+
+  # ── Grafana — Dashboards ─────────────────────────────────────
+  grafana:
+    image: grafana/grafana:10.2.0
+    ports:
+      - "3100:3000"    # Grafana sur 3100 pour ne pas conflicier avec votre gateway
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=devops2024
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana-data:/var/lib/grafana
+    networks:
+      - microservices
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+  # ── Alertmanager — Routage des alertes ──────────────────────
+  alertmanager:
+    image: prom/alertmanager:v0.26.0
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+    networks:
+      - microservices
+    restart: unless-stopped
+
+volumes:
+  prometheus-data:
+  grafana-data:
+
+# Accès aux interfaces :
+#   Prometheus  → http://localhost:9090
+#   Grafana     → http://localhost:3100  (admin / devops2024)
+#   Alertmanager→ http://localhost:9093

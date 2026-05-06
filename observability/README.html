@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>README Observabilité - TP Jour 3</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.2.0/github-markdown.min.css">
+    <style>
+        body {
+            box-sizing: border-box;
+            min-width: 200px;
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 45px;
+        }
+        .markdown-body {
+            box-sizing: border-box;
+            min-width: 200px;
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 45px;
+        }
+        @media (max-width: 767px) {
+            .markdown-body {
+                padding: 15px;
+            }
+        }
+        img {
+            max-width: 100%;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+        .page-break {
+            page-break-after: always;
+        }
+    </style>
+</head>
+<body>
+    <article class="markdown-body">
+        <h1>TP Jour 3 — Prometheus, Grafana & Alerting</h1>
+        
+        <h2>🎯 Objectifs</h2>
+        <ul>
+            <li>Instrumenter chaque service avec <strong>prom-client</strong> (Node.js) ou <strong>prometheus_client</strong> (Python)</li>
+            <li>Brancher <strong>Prometheus</strong> pour collecter les métriques automatiquement</li>
+            <li>Créer un <strong>dashboard Grafana</strong> avec la méthode RED (Rate, Errors, Duration)</li>
+            <li>Configurer <strong>2 alertes</strong> dans Alertmanager</li>
+            <li>Rédiger un <strong>SLO</strong> avec calcul de l'error budget</li>
+        </ul>
+
+        <hr>
+
+        <h2>📁 Fichiers fournis</h2>
+        <pre><code>TP-Jour3/
+├── instrumentation.js          ← Middleware Prometheus pour Express (Node.js)
+├── prometheus.yml              ← Config Prometheus (à adapter à vos services)
+├── alert_rules.yml             ← 4 règles d'alerte préconfigurées
+├── alertmanager.yml            ← Config Alertmanager avec inhibition rules
+├── docker-compose.monitoring.yml ← Stack Prometheus + Grafana + Alertmanager
+└── slo.md                      ← Template SLO à compléter avec vos mesures</code></pre>
+
+        <hr>
+
+        <h2>🚀 Étape 1 — Instrumenter vos services</h2>
+        <h3>Actuator Metrics (Spring Boot)</h3>
+        <p>Chaque service Spring Boot expose ses métriques sur <code>/actuator/prometheus</code>.</p>
+        
+        <p><strong>Metrics Customer Service :</strong><br>
+        <img src="../docs/images/httplocalhost8081actuatorprometheus.png" alt="Metrics Customer Service"></p>
+        
+        <p><strong>Metrics Account Service :</strong><br>
+        <img src="../docs/images/httplocalhost8082actuatorprometheus.png" alt="Metrics Account Service"></p>
+        
+        <p><strong>Metrics Gateway Service :</strong><br>
+        <img src="../docs/images/httplocalhost8888actuatorprometheus.png" alt="Metrics Gateway Service"></p>
+
+        <div class="page-break"></div>
+
+        <h2>🚀 Étape 2 — Lancer la stack de monitoring</h2>
+        <pre><code># Option B : Utilisez l'override (recommandé)
+docker-compose -f docker-compose.yml -f docker-compose.monitoring.yml up --build</code></pre>
+
+        <p>Vérifiez que Prometheus scrape bien vos services sur <code>http://localhost:9090/targets</code> :</p>
+        <p><strong>Prometheus Targets :</strong><br>
+        <img src="../docs/images/httplocalhost9090targetsdanscolonneStateLes5jobscustomer-serviceaccount-servicegateway-serviceconfig-servicediscovery-servicesontenvertUP.png" alt="Prometheus Targets"></p>
+
+        <hr>
+
+        <h2>🚀 Étape 3 — Créer le dashboard Grafana</h2>
+        <h3>Panel 1 — Rate (requêtes/seconde)</h3>
+        <p>Requête : <code>sum(rate(http_server_requests_seconds_count[5m])) by (job)</code></p>
+        <img src="../docs/images/httplocalhost8081actuatorprometheusgrephttp_server_requests_seconds_count.png" alt="Query Rate">
+
+        <h3>Panel 2 — Errors (% d'erreur)</h3>
+        <p>Requête : <code>sum(rate(http_server_requests_seconds_count{status=~"5.."}[5m])) / sum(rate(http_server_requests_seconds_count[5m])) * 100</code></p>
+        <img src="../docs/images/les404dansPrometheussumratehttp_server_requests_seconds_count.png" alt="Query Errors">
+
+        <div class="page-break"></div>
+
+        <h3>Panel 3 — Duration (latence p99)</h3>
+        <p>Requête : <code>histogram_quantile(0.99, sum(rate(http_server_requests_seconds_bucket[5m])) by (le, job)) * 1000</code></p>
+        <img src="../docs/images/requetepourhistogram_quantile.png" alt="Query Latency">
+        <img src="../docs/images/requetepourhistogram_quantilegraph.png" alt="Graph Latency">
+
+        <h4>Détails des Buckets HTTP</h4>
+        <img src="../docs/images/http_server_requests_seconds_bucket.png" alt="HTTP Buckets">
+        <img src="../docs/images/http_server_requests_seconds_bucketgraph.png" alt="HTTP Buckets Graph">
+
+        <h3>Panel 4 — Mémoire JVM (bonus)</h3>
+        <img src="../docs/images/httplocalhost8082actuatorprometheusgrepjvm_memory_used_bytes.png" alt="Query Memory">
+
+        <h3>Panel 5 — Gateway Routes (bonus)</h3>
+        <img src="../docs/images/httplocalhost8888actuatorprometheusgrepspring_cloud_gateway_routes_count.png" alt="Gateway Routes">
+
+        <div class="page-break"></div>
+
+        <h2>🚀 Étape 4 — Tester les alertes</h2>
+        <p>Vérifiez dans Prometheus → Alerts que <code>HighErrorRate</code> passe en <strong>FIRING</strong> après génération d'erreurs.</p>
+        <img src="../docs/images/grafana-explore-p99-latency.png" alt="Grafana Explore p99">
+
+        <hr>
+
+        <h2>📋 Critères de notation</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Critère</th>
+                    <th>Points</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Services instrumentés (Micrometer/Prometheus)</td>
+                    <td>4 pts</td>
+                </tr>
+                <tr>
+                    <td>Prometheus scrape tous les services (State: UP)</td>
+                    <td>2 pts</td>
+                </tr>
+                <tr>
+                    <td>Dashboard Grafana avec 3 panels RED</td>
+                    <td>4 pts</td>
+                </tr>
+                <tr>
+                    <td>Alertes configurées (Rules YAML)</td>
+                    <td>4 pts</td>
+                </tr>
+                <tr>
+                    <td>Fichier slo.md complété</td>
+                    <td>3 pts</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <hr>
+
+        <h2>📦 Livrable</h2>
+        <ol>
+            <li>Code Git avec instrumentation</li>
+            <li>Capture d'écran du dashboard Grafana</li>
+            <li>Fichier alert_rules.yml</li>
+            <li>Fichier slo.md complété</li>
+        </ol>
+    </article>
+</body>
+</html>
