@@ -36,6 +36,14 @@ Chaque service expose des métriques via `/actuator`.
 - **Health** : État de santé du service et de ses dépendances (DB, Config, Discovery).
 - **Beans** : Liste des beans chargés dans le contexte Spring.
 - **Env** : Visualisation des propriétés de configuration chargées.
+- **Prometheus** : Métriques au format Prometheus pour le scraping.
+
+![Metrics Actuator Gateway](./images/httplocalhost8888actuatorprometheus.png)
+
+### Visualisation avec Grafana
+Les métriques collectées sont visualisées dans Grafana pour suivre les performances en temps réel.
+
+![Grafana P99 Latency](./images/grafana-explore-p99-latency.png)
 
 ---
 *Voir aussi :*

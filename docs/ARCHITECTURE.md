@@ -41,5 +41,12 @@ graph TD
 Le système utilise principalement des communications synchrones via **REST** (RestTemplate ou OpenFeign).
 *   `Account Service` communique avec `Customer Service` pour valider l'existence d'un client lors de la création d'un compte.
 
-## 4. Base de Données
-Chaque service possède sa propre base de données (Pattern **Database per Service**). Actuellement, des bases H2 sont utilisées pour faciliter le développement, mais elles peuvent être remplacées par PostgreSQL ou MySQL via la configuration centralisée.
+## 5. Observabilité & Monitoring
+Le projet intègre une stack de monitoring complète basée sur **Prometheus** et **Grafana**.
+
+- **Collecte des métriques** : Chaque microservice expose ses métriques métier et système (JVM, HTTP) via l'endpoint `/actuator/prometheus`.
+- **Scraping** : Prometheus est configuré pour collecter périodiquement ces données.
+- **Visualisation** : Grafana permet de créer des dashboards pour monitorer le taux de requêtes (Rate), les erreurs (Errors) et la latence (Duration) - méthode RED.
+- **Alerting** : Alertmanager gère les notifications en cas de dépassement de seuils critiques.
+
+![Prometheus Targets Status](./images/httplocalhost9090targetsdanscolonneStateLes5jobscustomer-serviceaccount-servicegateway-serviceconfig-servicediscovery-servicesontenvertUP.png)

@@ -4,7 +4,7 @@ Ce projet est une application de gestion bancaire basée sur une architecture mi
 
 ---
 
-## 🚀 Architecture du Système
+##  Architecture du Système
 
 L'écosystème est composé des modules suivants :
 
@@ -112,7 +112,7 @@ Toutes les APIs sont accessibles via la **Gateway (port 8888)**.
 
 ---
 
-## 🧪 Guide de Test & Validation
+##  Guide de Test & Validation
 
 ### Vérification de l'Infrastructure
 Ouvrez [http://localhost:8761](http://localhost:8761) : Vous devez voir tous les services enregistrés.
@@ -128,7 +128,52 @@ Ouvrez [http://localhost:82](http://localhost:82) pour tester l'interface Angula
 
 ---
 
-## 📦 Déploiement & DevOps
+##  Observabilité & Monitoring
+
+Le système intègre une stack complète pour le suivi des performances et de la santé des microservices.
+
+### 1. Collecte des métriques (Prometheus)
+Tous les services exposent des métriques via Spring Boot Actuator. Prometheus scrape ces endpoints pour centraliser les données.
+
+| Service | Endpoint Actuator | Visualisation des métriques |
+| :--- | :--- | :--- |
+| **Customer Service** | `:8081/actuator/prometheus` | ![Metrics Customer](./docs/images/httplocalhost8081actuatorprometheus.png) |
+| **Account Service** | `:8082/actuator/prometheus` | ![Metrics Account](./docs/images/ %20httplocalhost8082actuatorprometheus.png) |
+| **Gateway Service** | `:8888/actuator/prometheus` | ![Metrics Gateway](./docs/images/httplocalhost8888actuatorprometheus.png) |
+
+#### Vérification des cibles (Targets)
+Status des services dans Prometheus (tous à **UP**) :
+![Prometheus Targets](./docs/images/httplocalhost9090targetsdanscolonneStateLes5jobscustomer-serviceaccount-servicegateway-serviceconfig-servicediscovery-servicesontenvertUP.png)
+
+### 2. Analyse et Requêtage
+Exemples de requêtes PromQL utilisées pour extraire des indicateurs clés :
+
+*   **Taux d'erreur (404/5xx)** :
+    ![Analyse 404](./docs/images/les404dansPrometheussumratehttp_server_requests_seconds_count.png)
+*   **Requêtes HTTP (Customer)** :
+    ![Requêtes Customer](./docs/images/httplocalhost8081actuatorprometheusgrephttp_server_requests_seconds_count.png)
+*   **Utilisation Mémoire JVM** :
+    ![Mémoire JVM](./docs/images/ %20httplocalhost8082actuatorprometheusgrepjvm_memory_used_bytes.png)
+*   **Routes Gateway** :
+    ![Routes Gateway](./docs/images/httplocalhost8888actuatorprometheusgrepspring_cloud_gateway_routes_count.png)
+
+### 3. Visualisation (Grafana)
+Tableaux de bord pour le monitoring en temps réel.
+
+#### Latence p99 et Histogrammes
+Analyse de la distribution du temps de réponse :
+![Grafana Latency](./docs/images/grafana-explore-p99-latency.png)
+![Histogram Quantile](./docs/images/requetepourhistogram_quantile.png)
+![Histogram Graph](./docs/images/requetepourhistogram_quantilegraph.png)
+
+#### Détails des Buckets HTTP
+Visualisation des seaux de latence pour les requêtes serveur :
+![HTTP Buckets](./docs/images/http_server_requests_seconds_bucket.png)
+![HTTP Buckets Graph](./docs/images/http_server_requests_seconds_bucketgraph.png)
+
+---
+
+##  Déploiement & DevOps
 
 ### Ordre de Démarrage
 1. Eureka -> 2. Config -> 3. Microservices -> 4. Gateway -> 5. Angular
@@ -140,7 +185,7 @@ Ouvrez [http://localhost:82](http://localhost:82) pour tester l'interface Angula
 
 ---
 
-## 🔗 Liens vers les Documents Complets
+##  Liens vers les Documents Complets
 *   [Architecture Détaillée](./docs/ARCHITECTURE.md)
 *   [Guide de Déploiement](./docs/DEPLOYMENT_GUIDE.md)
 *   [Guide API](./docs/API_GUIDE.md)

@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Banking System - Documentation</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.2.0/github-markdown.min.css">
+    <style>
+        body {
+            box-sizing: border-box;
+            min-width: 200px;
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 45px;
+        }
+        .markdown-body {
+            box-sizing: border-box;
+            min-width: 200px;
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 45px;
+        }
+        @media (max-width: 767px) {
+            .markdown-body {
+                padding: 15px;
+            }
+        }
+        img {
+            max-width: 100%;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+        .page-break {
+            page-break-after: always;
+        }
+        pre {
+            background-color: #f6f8fa;
+            padding: 16px;
+            border-radius: 6px;
+            overflow: auto;
+        }
+        code {
+            font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+        }
+    </style>
+</head>
+<body>
+    <article class="markdown-body">
+        <h1>Observabilité des Microservices</h1>
+        <p>Ce projet est une application de gestion bancaire basée sur une architecture microservices robuste utilisant <strong>Spring Boot</strong>, <strong>Spring Cloud</strong> et <strong>Angular</strong>.</p>
+
+        <hr>
+
+        <h2> Architecture du Système</h2>
+        <p>L'écosystème est composé des modules suivants :</p>
+        <ul>
+            <li><strong>Discovery Service (Eureka)</strong> : Service de découverte permettant l'enregistrement et la localisation des microservices.</li>
+            <li><strong>Config Server</strong> : Gestion centralisée de la configuration via un dépôt Git.</li>
+            <li><strong>Gateway Service</strong> : Point d'entrée unique de l'application (Routing dynamique).</li>
+            <li><strong>Customer Service</strong> : Gestion des clients (Données métier).</li>
+            <li><strong>Account Service</strong> : Gestion des comptes bancaires et transactions.</li>
+            <li><strong>Angular Front-End</strong> : Interface utilisateur moderne pour interagir avec le système.</li>
+        </ul>
+
+        <h3>Patterns Microservices Utilisés</h3>
+        <h4>Service Discovery (Netflix Eureka)</h4>
+        <p>Chaque instance de microservice s'enregistre auprès du serveur Eureka au démarrage. Cela permet :</p>
+        <ul>
+            <li>Le <strong>Load Balancing</strong> côté client.</li>
+            <li>L'abstraction des adresses IP et des ports.</li>
+            <li>La haute disponibilité.</li>
+        </ul>
+        <p><img src="./docs/images/discoveryeureka.png" alt="Dashboard Eureka"></p>
+
+        <div class="page-break"></div>
+
+        <h4>Configuration Centralisée (Spring Cloud Config)</h4>
+        <p>Toutes les configurations (fichiers <code>.properties</code> ou <code>.yml</code>) sont stockées dans un dépôt Git externe ou local.</p>
+        <ul>
+            <li><strong>Avantage</strong> : Modification des paramètres sans recompiler ou redémarrer les services (via <code>/actuator/refresh</code>).</li>
+            <li><strong>Sécurité</strong> : Séparation stricte entre le code et la configuration.</li>
+        </ul>
+
+        <h4>API Gateway (Spring Cloud Gateway)</h4>
+        <p>Toutes les requêtes externes passent par ce composant.</p>
+        <ul>
+            <li><strong>Routage Dynamique</strong> : Utilise le Discovery Client pour router les requêtes vers les services disponibles (ex: <code>/CUSTOMER-SERVICE/**</code>).</li>
+            <li><strong>Sécurité Centralisée</strong> : Point idéal pour implémenter l'authentification (JWT) et le Rate Limiting.</li>
+        </ul>
+
+        <hr>
+
+        <h2> Tech Stack</h2>
+        <ul>
+            <li><strong>Backend</strong> : Java 17, Spring Boot 3, Spring Cloud (Gateway, Config, Eureka).</li>
+            <li><strong>Frontend</strong> : Angular, Bootstrap.</li>
+            <li><strong>DevOps</strong> : Docker, Docker Compose.</li>
+            <li><strong>Database</strong> : H2 (In-Memory) pour le développement.</li>
+        </ul>
+
+        <div class="page-break"></div>
+
+        <hr>
+
+        <h2> Démarrage Rapide</h2>
+        <h3>Lancement avec Docker (Recommandé)</h3>
+        <pre><code># Compiler les JARs
+mvn clean package -DskipTests</code></pre>
+        <p><img src="./docs/images/mvncleanpackage-DskipTests.png" alt="Compilation Maven"></p>
+
+        <pre><code># Lancer la stack
+docker-compose up -d --build</code></pre>
+        <p><img src="./docs/images/dockercomposeup-d--build.png" alt="Lancement Docker Compose"></p>
+
+        <hr>
+
+        <h2> Guide des APIs</h2>
+        <p>Toutes les APIs sont accessibles via la <strong>Gateway (port 8888)</strong>.</p>
+        <h3>1. Customer Service</h3>
+        <p><img src="./docs/images/localhost8888CUSTOMER-SERVICEcustomers.png" alt="Réponse API Customers"></p>
+        <h3>2. Account Service</h3>
+        <p><img src="./docs/images/localhost8888ACCOUNT-SERVICEaccounts.png" alt="Réponse API Accounts"></p>
+
+        <div class="page-break"></div>
+
+        <hr>
+
+        <h2> Guide de Test & Validation</h2>
+        <h3>Vérification de l'Infrastructure</h3>
+        <p><img src="./docs/images/discoveryeureka.png" alt="Dashboard Eureka"></p>
+        <h3>Health Checks</h3>
+        <p><img src="./docs/images/localhost8081actuatorhealth.png" alt="Actuator Health"></p>
+        <h3>Interface UI</h3>
+        <p><img src="./docs/images/localhost82customers.png" alt="Interface Angular"></p>
+
+        <hr>
+
+        <h2> Observabilité & Monitoring</h2>
+        <p>Le système intègre une stack complète pour le suivi des performances et de la santé des microservices.</p>
+        
+        <h3>1. Collecte des métriques (Prometheus)</h3>
+        <p><strong>Metrics Customer Service :</strong><br><img src="./docs/images/httplocalhost8081actuatorprometheus.png" alt="Metrics Customer"></p>
+        <p><strong>Metrics Account Service :</strong><br><img src="./docs/images/%20httplocalhost8082actuatorprometheus.png" alt="Metrics Account"></p>
+        <p><strong>Metrics Gateway Service :</strong><br><img src="./docs/images/httplocalhost8888actuatorprometheus.png" alt="Metrics Gateway"></p>
+
+        <div class="page-break"></div>
+
+        <h4>Vérification des cibles (Targets)</h4>
+        <p><img src="./docs/images/httplocalhost9090targetsdanscolonneStateLes5jobscustomer-serviceaccount-servicegateway-serviceconfig-servicediscovery-servicesontenvertUP.png" alt="Prometheus Targets"></p>
+
+        <h3>2. Analyse et Requêtage</h3>
+        <ul>
+            <li><strong>Taux d'erreur (404/5xx) :</strong><br><img src="./docs/images/les404dansPrometheussumratehttp_server_requests_seconds_count.png" alt="Analyse 404"></li>
+            <li><strong>Requêtes HTTP (Customer) :</strong><br><img src="./docs/images/httplocalhost8081actuatorprometheusgrephttp_server_requests_seconds_count.png" alt="Requêtes Customer"></li>
+            <li><strong>Utilisation Mémoire JVM :</strong><br><img src="./docs/images/%20httplocalhost8082actuatorprometheusgrepjvm_memory_used_bytes.png" alt="Mémoire JVM"></li>
+            <li><strong>Routes Gateway :</strong><br><img src="./docs/images/httplocalhost8888actuatorprometheusgrepspring_cloud_gateway_routes_count.png" alt="Routes Gateway"></li>
+        </ul>
+
+        <div class="page-break"></div>
+
+        <h3>3. Visualisation (Grafana)</h3>
+        <h4>Latence p99 et Histogrammes</h4>
+        <p><img src="./docs/images/grafana-explore-p99-latency.png" alt="Grafana Latency"></p>
+        <p><img src="./docs/images/requetepourhistogram_quantile.png" alt="Histogram Quantile"></p>
+        <p><img src="./docs/images/requetepourhistogram_quantilegraph.png" alt="Histogram Graph"></p>
+
+        <h4>Détails des Buckets HTTP</h4>
+        <p><img src="./docs/images/http_server_requests_seconds_bucket.png" alt="HTTP Buckets"></p>
+        <p><img src="./docs/images/http_server_requests_seconds_bucketgraph.png" alt="HTTP Buckets Graph"></p>
+
+        <hr>
+    </article>
+</body>
+</html>

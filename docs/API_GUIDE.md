@@ -30,7 +30,9 @@ Chaque microservice expose des points de terminaison de monitoring via Spring Bo
 *   **Health Check** : `/actuator/health`
 *   **Info** : `/actuator/info`
 *   **Metrics** : `/actuator/metrics`
-*   **Refresh Config** : `/actuator/refresh` (POST uniquement)
+*   **Prometheus** : `/actuator/prometheus` (Format Prometheus pour monitoring)
+
+![Prometheus Metrics Gateway](./images/httplocalhost8888actuatorprometheus.png)
 
 ---
 
